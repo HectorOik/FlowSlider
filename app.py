@@ -11,6 +11,7 @@ import random
 
 import gradio as gr
 import numpy as np
+import spaces
 import torch
 from PIL import Image
 
@@ -89,6 +90,7 @@ def _decode_latent(pipe, x0_tar, device: str) -> Image.Image:
 # Core inference
 # ---------------------------------------------------------------------------
 
+@spaces.GPU
 def run_edit(
     model_name: str,
     image: Image.Image,
