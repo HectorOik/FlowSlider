@@ -59,3 +59,4 @@ examples/lake_autumn_s2.png filter=lfs diff=lfs merge=lfs -text
 examples/tree_winter_s2.png filter=lfs diff=lfs merge=lfs -text
 examples/lake_autumn_s4.png filter=lfs diff=lfs merge=lfs -text
 examples/tree_winter_original.png filter=lfs diff=lfs merge=lfs -text
+examples/tree_winter_s1.png filter=lfs diff=lfs merge=lfs -text
