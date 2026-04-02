@@ -278,7 +278,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
     gr.Markdown(DESCRIPTION)
 
     # ---- Showcase gallery ----
-    gr.Markdown("## Pre-computed Examples")
+    gr.Markdown("## Examples")
     gr.Markdown("Each strip shows the original image followed by FlowSlider outputs at strengths s = 1 → 5.")
 
     for ex in SHOWCASE:
