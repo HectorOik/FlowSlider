@@ -270,13 +270,7 @@ The magic is in separating the edit dynamics into two independent parts:
 
 By adjusting the strength slider **`s`**. you can amplify the steering effect while keeping the fidelity anchor intact, giving you smooth continuous control over the edit intensity.
 
-## Why It's Better
-
-FlowSlider keeps the image faithful to the original while only amplifying the semantic changes you want. No weird artifacts, just smooth, controllable edits.
-
 **Try it:** Upload an image, describe what you see and what you want to change, then slide to find your perfect level of edit intensity!
-
-Note: due to HuggingFace Spaces resource limits, the results are resized to 512px on the short edge and may take ~30 seconds to generate.
 """
 
 with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFont("Inter"))) as demo:
@@ -300,6 +294,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
 
     gr.Markdown("---")
     gr.Markdown("## Try It Yourself")
+    gr.Markdown("⚠️ **Note:** Due to HuggingFace Spaces resource limits, results are resized to 512px on the short edge and may take ~30 seconds to generate.")
 
     with gr.Row():
         # ── Inputs ──────────────────────────────────────────────────────────
@@ -385,7 +380,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
                 "Metal mugs. Shiny silver surface, smooth cylindrical body, clean metal handles. Standing on stone surface in grassy field.",
                 "Metal mugs. Heavily rusted surface, severely corroded cylindrical body, broken shattered handles. Standing on crumbling stone surface in overgrown field.",
                 "Metal mugs. Shiny silver surface, smooth cylindrical body, clean metal handles. Standing on stone surface in grassy field.",
-                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
@@ -393,7 +388,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
                 "majestic solitary tree on rolling green alpine meadow, starburst sun rays peeking through branches, long shadow on grass, blue sky with scattered white clouds, distant forested mountains, golden hour light",
                 "majestic solitary tree on rolling snow-covered white alpine meadow, starburst sun rays peeking through bare branches, long shadow on snow, blue sky with scattered white clouds, distant snow-covered mountains, winter light",
                 "majestic solitary tree on rolling green alpine meadow, starburst sun rays peeking through branches, long shadow on grass, blue sky with scattered white clouds, distant forested mountains, golden hour light",
-                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
@@ -401,7 +396,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
                 "delicate vibrant orange autumn leaves on slender dark tree branches, soft misty foggy background with blurred tree silhouettes, backlit leaves glowing with warm color, artistic nature photography with shallow depth of field, peaceful fall morning atmosphere",
                 "delicate vibrant fresh green spring leaves on slender dark tree branches, soft clear bright background with blurred tree silhouettes, backlit leaves glowing with green color, artistic nature photography with shallow depth of field, peaceful spring morning atmosphere",
                 "delicate vibrant orange autumn leaves on slender dark tree branches, soft misty foggy background with blurred tree silhouettes, backlit leaves glowing with warm color, artistic nature photography with shallow depth of field, peaceful fall morning atmosphere",
-                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
@@ -409,7 +404,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
                 "serene early spring lake with mirror-like reflections of shoreline scenery, manicured green grass meadow with scattered deciduous trees showing fresh pale green and yellow buds, mixed evergreen and bare deciduous forest on rolling hillside, small stone bridge over inlet, moody dramatic cloudy sky with bright breaks, German or Austrian countryside park atmosphere",
                 "serene autumn lake with mirror-like reflections of shoreline scenery, golden brown grass meadow with scattered deciduous trees showing vibrant orange and red fall foliage, mixed evergreen and colorful autumn forest on rolling hillside, small stone bridge over inlet, moody dramatic cloudy sky, German or Austrian countryside park autumn atmosphere",
                 "serene early spring lake with mirror-like reflections of shoreline scenery, manicured green grass meadow with scattered deciduous trees showing fresh pale green and yellow buds, mixed evergreen and bare deciduous forest on rolling hillside, small stone bridge over inlet, moody dramatic cloudy sky with bright breaks, German or Austrian countryside park atmosphere",
-                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
@@ -417,7 +412,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
                 "breathtaking aerial view from Reinebringen mountain summit overlooking iconic Reine fishing village on Lofoten Islands Norway, dramatic jagged granite mountain peaks rising from deep blue Norwegian Sea fjords, small dark tarn lake in foreground, traditional red and white fishing huts scattered along coastline, winding roads and bridges connecting islands, moody overcast sky with warm light on horizon, spectacular Nordic Arctic archipelago landscape",
                 "breathtaking aerial view from Reinebringen mountain summit overlooking iconic Reine fishing village on Lofoten Islands Norway, dramatic jagged granite mountain peaks rising from golden reflective Norwegian Sea fjords, small dark tarn lake in foreground, traditional red and white fishing huts scattered along coastline, winding roads and bridges connecting islands, dramatic warm orange and pink sunset sky, spectacular Nordic Arctic archipelago golden hour landscape",
                 "breathtaking aerial view from Reinebringen mountain summit overlooking iconic Reine fishing village on Lofoten Islands Norway, dramatic jagged granite mountain peaks rising from deep blue Norwegian Sea fjords, small dark tarn lake in foreground, traditional red and white fishing huts scattered along coastline, winding roads and bridges connecting islands, moody overcast sky with warm light on horizon, spectacular Nordic Arctic archipelago landscape",
-                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
         ],
         inputs=[
