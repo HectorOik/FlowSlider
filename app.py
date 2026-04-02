@@ -36,10 +36,10 @@ MODEL_DEFAULTS = {
     },
     "Stable Diffusion 3": {
         "model_id": "stabilityai/stable-diffusion-3-medium-diffusers",
-        "T_steps": 50,
-        "n_max": 33,
+        "T_steps": 28,
+        "n_max": 20,
         "src_cfg": 3.5,
-        "tar_cfg": 13.5,
+        "tar_cfg": 3.5,
     },
 }
 
@@ -93,6 +93,7 @@ def run_edit(
     image: Image.Image,
     src_prompt: str,
     tar_prompt: str,
+    tar_prompt_neg: str,
     strengths_str: str,
     T_steps: int,
     n_max: int,
@@ -133,7 +134,8 @@ def run_edit(
     progress(0.05, desc="Encoding source image…")
     x0_src = _encode_image(pipe, image_rgb, device)
 
-    # In FlowSlider, tar_prompt_neg = src_prompt (fidelity anchor)
+    # Fidelity anchor: use provided negative prompt, or fall back to source prompt
+    fidelity_prompt = tar_prompt_neg.strip() if tar_prompt_neg.strip() else src_prompt
     slider_fn = FlowEditFLUX_Slider if model_name == "FLUX.1-dev" else FlowEditSD3_Slider
 
     gallery: list[tuple[Image.Image, str]] = [(image_rgb, "Original")]
@@ -152,9 +154,9 @@ def run_edit(
             scheduler=scheduler,
             x_src=x0_src,
             src_prompt=src_prompt,
-            tar_prompt_pos=tar_prompt,
-            tar_prompt_neg=src_prompt,   # fidelity anchor = source prompt
-            scale=s,
+            tar_prompt=tar_prompt,
+            tar_prompt_neg=fidelity_prompt,
+            strength=s,
             T_steps=int(T_steps),
             n_avg=1,
             src_guidance_scale=float(src_cfg),
@@ -321,6 +323,11 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
                 placeholder="e.g. a wooden barn with rusted collapsed roof in an overgrown field",
                 lines=2,
             )
+            tar_prompt_neg = gr.Textbox(
+                label="Negative Target Prompt  (optional)",
+                placeholder="Leave empty to use the source prompt as the fidelity anchor.",
+                lines=2,
+            )
 
             strengths_input = gr.Textbox(
                 label="Edit Strengths  (s)",
@@ -362,7 +369,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
         fn=run_edit,
         inputs=[
             model_name, image_input,
-            src_prompt, tar_prompt,
+            src_prompt, tar_prompt, tar_prompt_neg,
             strengths_input,
             T_steps, n_max, src_cfg, tar_cfg, seed,
         ],
@@ -377,40 +384,40 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
                 "examples/mugs_original.png",
                 "Metal mugs. Shiny silver surface, smooth cylindrical body, clean metal handles. Standing on stone surface in grassy field.",
                 "Metal mugs. Heavily rusted surface, severely corroded cylindrical body, broken shattered handles. Standing on crumbling stone surface in overgrown field.",
-                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
                 "examples/tree_winter_original.png",
                 "majestic solitary tree on rolling green alpine meadow, starburst sun rays peeking through branches, long shadow on grass, blue sky with scattered white clouds, distant forested mountains, golden hour light",
                 "majestic solitary tree on rolling snow-covered white alpine meadow, starburst sun rays peeking through bare branches, long shadow on snow, blue sky with scattered white clouds, distant snow-covered mountains, winter light",
-                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
                 "examples/leaves_spring_original.png",
                 "delicate vibrant orange autumn leaves on slender dark tree branches, soft misty foggy background with blurred tree silhouettes, backlit leaves glowing with warm color, artistic nature photography with shallow depth of field, peaceful fall morning atmosphere",
                 "delicate vibrant fresh green spring leaves on slender dark tree branches, soft clear bright background with blurred tree silhouettes, backlit leaves glowing with green color, artistic nature photography with shallow depth of field, peaceful spring morning atmosphere",
-                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
                 "examples/lake_autumn_original.png",
                 "serene early spring lake with mirror-like reflections of shoreline scenery, manicured green grass meadow with scattered deciduous trees showing fresh pale green and yellow buds, mixed evergreen and bare deciduous forest on rolling hillside, small stone bridge over inlet, moody dramatic cloudy sky with bright breaks, German or Austrian countryside park atmosphere",
                 "serene autumn lake with mirror-like reflections of shoreline scenery, golden brown grass meadow with scattered deciduous trees showing vibrant orange and red fall foliage, mixed evergreen and colorful autumn forest on rolling hillside, small stone bridge over inlet, moody dramatic cloudy sky, German or Austrian countryside park autumn atmosphere",
-                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
             [
                 "FLUX.1-dev",
                 "examples/lofoten_sunset_original.png",
                 "breathtaking aerial view from Reinebringen mountain summit overlooking iconic Reine fishing village on Lofoten Islands Norway, dramatic jagged granite mountain peaks rising from deep blue Norwegian Sea fjords, small dark tarn lake in foreground, traditional red and white fishing huts scattered along coastline, winding roads and bridges connecting islands, moody overcast sky with warm light on horizon, spectacular Nordic Arctic archipelago landscape",
                 "breathtaking aerial view from Reinebringen mountain summit overlooking iconic Reine fishing village on Lofoten Islands Norway, dramatic jagged granite mountain peaks rising from golden reflective Norwegian Sea fjords, small dark tarn lake in foreground, traditional red and white fishing huts scattered along coastline, winding roads and bridges connecting islands, dramatic warm orange and pink sunset sky, spectacular Nordic Arctic archipelago golden hour landscape",
-                "1, 2, 3", 28, 20, 3.5, 3.5, 42,
+                "", "1, 2, 3", 28, 20, 3.5, 3.5, 42,
             ],
         ],
         inputs=[
             model_name, image_input,
-            src_prompt, tar_prompt,
+            src_prompt, tar_prompt, tar_prompt_neg,
             strengths_input, T_steps, n_max, src_cfg, tar_cfg, seed,
         ],
         outputs=[gallery_out],
