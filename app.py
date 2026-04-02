@@ -294,7 +294,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
                     info="Total diffusion steps (FLUX default: 28, SD3 default: 50).",
                 )
                 n_max = gr.Slider(
-                    minimum=1, maximum=60, step=1, value=20,
+                    minimum=1, maximum=60, step=1, value=22,
                     label="n_max",
                     info="Number of steps that use flow-editing (rest uses regular sampling).",
                 )
@@ -303,7 +303,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
                     label="Source Guidance Scale",
                 )
                 tar_cfg = gr.Slider(
-                    minimum=1.0, maximum=20.0, step=0.5, value=5.5,
+                    minimum=1.0, maximum=20.0, step=0.5, value=3.5,
                     label="Target Guidance Scale",
                 )
                 seed = gr.Number(value=42, label="Seed", precision=0)
