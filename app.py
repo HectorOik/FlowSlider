@@ -294,7 +294,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft()) as demo:
                     info="Total diffusion steps (FLUX default: 28, SD3 default: 50).",
                 )
                 n_max = gr.Slider(
-                    minimum=1, maximum=60, step=1, value=22,
+                    minimum=1, maximum=60, step=1, value=20,
                     label="n_max",
                     info="Number of steps that use flow-editing (rest uses regular sampling).",
                 )
