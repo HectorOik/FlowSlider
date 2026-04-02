@@ -51,3 +51,4 @@ examples/barn_original.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_s1.png filter=lfs diff=lfs merge=lfs -text
 examples/barn_s4.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_s5.png filter=lfs diff=lfs merge=lfs -text
+examples/tree_winter_s3.png filter=lfs diff=lfs merge=lfs -text
