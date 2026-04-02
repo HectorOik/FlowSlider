@@ -31,16 +31,16 @@ MODEL_DEFAULTS = {
     "FLUX.1-dev": {
         "model_id": "black-forest-labs/FLUX.1-dev",
         "T_steps": 28,
-        "n_max": 20,
+        "n_max": 22,
         "src_cfg": 3.5,
-        "tar_cfg": 5.5,
+        "tar_cfg": 3.5,
     },
     "Stable Diffusion 3": {
         "model_id": "stabilityai/stable-diffusion-3-medium-diffusers",
-        "T_steps": 50,
-        "n_max": 33,
+        "T_steps": 28,
+        "n_max": 22,
         "src_cfg": 3.5,
-        "tar_cfg": 13.5,
+        "tar_cfg": 3.5,
     },
 }
 
