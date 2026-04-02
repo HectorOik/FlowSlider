@@ -37,3 +37,4 @@ examples/sunflower_s5.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_s2.png filter=lfs diff=lfs merge=lfs -text
 examples/barn_s3.png filter=lfs diff=lfs merge=lfs -text
 examples/sunflower_s2.png filter=lfs diff=lfs merge=lfs -text
+examples/sunflower_s3.png filter=lfs diff=lfs merge=lfs -text
