@@ -63,3 +63,4 @@ examples/tree_winter_s1.png filter=lfs diff=lfs merge=lfs -text
 examples/lake_autumn_s3.png filter=lfs diff=lfs merge=lfs -text
 examples/mugs_s4.png filter=lfs diff=lfs merge=lfs -text
 examples/lofoten_sunset_s5.png filter=lfs diff=lfs merge=lfs -text
+examples/lofoten_sunset_s4.png filter=lfs diff=lfs merge=lfs -text
