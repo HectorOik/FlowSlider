@@ -257,9 +257,9 @@ SHOWCASE = [
 # Build interface
 # ---------------------------------------------------------------------------
 DESCRIPTION = """
-# FlowSlider: Training-Free Continuous Image Editing
+# FlowSlider: Training-Free Continuous Image Editing via Fidelity-Steering Decomposition
 
-**FlowSlider** lets you control how much an image edit happens—from subtle changes to dramatic transformations—using a editing slider.
+**FlowSlider** lets you control how much an image edit happens—from subtle changes to dramatic transformations.
 
 ## How It Works
 
@@ -268,7 +268,7 @@ The magic is in separating the edit dynamics into two independent parts:
 - **Fidelity** — keeps your image looking like the original
 - **Steering** — pushes the image toward your target description
 
-By adjusting the strength slider **`s`**. you can amplify the steering effect while keeping the fidelity anchor intact, giving you smooth continuous control over the edit intensity.
+By adjusting the strength slider **`s`**, you can amplify the steering effect while keeping the fidelity anchor intact, giving you smooth continuous control over the edit intensity.
 
 **Try it:** Upload an image, describe what you see and what you want to change, then slide to find your perfect level of edit intensity!
 """
