@@ -49,3 +49,4 @@ examples/sunflower_original.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_original.png filter=lfs diff=lfs merge=lfs -text
 examples/barn_original.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_s1.png filter=lfs diff=lfs merge=lfs -text
+examples/barn_s4.png filter=lfs diff=lfs merge=lfs -text
