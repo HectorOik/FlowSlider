@@ -53,3 +53,4 @@ examples/barn_s4.png filter=lfs diff=lfs merge=lfs -text
 examples/railroad_s5.png filter=lfs diff=lfs merge=lfs -text
 examples/tree_winter_s3.png filter=lfs diff=lfs merge=lfs -text
 examples/lofoten_sunset_s1.png filter=lfs diff=lfs merge=lfs -text
+examples/lake_autumn_s5.png filter=lfs diff=lfs merge=lfs -text
