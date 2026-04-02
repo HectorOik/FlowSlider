@@ -74,3 +74,4 @@ examples/lake_autumn_original.png filter=lfs diff=lfs merge=lfs -text
 examples/tree_winter_s5.png filter=lfs diff=lfs merge=lfs -text
 examples/lofoten_sunset_s3.png filter=lfs diff=lfs merge=lfs -text
 examples/leaves_spring_s4.png filter=lfs diff=lfs merge=lfs -text
+examples/lake_autumn_s1.png filter=lfs diff=lfs merge=lfs -text
