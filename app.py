@@ -141,7 +141,7 @@ def run_edit(
 
     # Resize input (short edge ≤ 768 to keep VRAM manageable in the Space)
     image_rgb = image.convert("RGB")
-    image_rgb, _ = resize_image_for_flux(image_rgb, max_short_edge=768)
+    image_rgb, _ = resize_image_for_flux(image_rgb, max_short_edge=512)
 
     progress(0.05, desc="Encoding source image…")
     x0_src = _encode_image(pipe, image_rgb, device)
