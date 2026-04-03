@@ -258,6 +258,7 @@ SHOWCASE = [
 # ---------------------------------------------------------------------------
 DESCRIPTION = """
 # FlowSlider: Training-Free Continuous Image Editing via Fidelity-Steering Decomposition
+[![arXiv](https://img.shields.io/badge/arXiv-2604.02088-b31b1b.svg)](https://arxiv.org/abs/2604.02088)
 
 **FlowSlider** lets you control how much an image edit happens—from subtle changes to dramatic transformations.
 
