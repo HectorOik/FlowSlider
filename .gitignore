@@ -1,0 +1,31 @@
+# Virtual Environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Model Checkpoints & Large Data Outputs
+*.pt
+*.safetensors
+*.bin
+*.onnx
+outputs/
+test_images/
+datasets/
+
+# IDE / OS specific files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
