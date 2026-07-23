@@ -5,6 +5,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+flow-slider-env/
 
 # Python cache & compiled files
 __pycache__/
