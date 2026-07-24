@@ -290,7 +290,7 @@ with gr.Blocks(title="FlowSlider", theme=gr.themes.Soft(font=gr.themes.GoogleFon
             height=200,
             object_fit="cover",
             show_label=False,
-            show_share_button=False,
+            # show_share_button=False,
         )
 
     gr.Markdown("---")
