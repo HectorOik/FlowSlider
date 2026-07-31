@@ -6,3 +6,5 @@ sentencepiece
 protobuf
 gradio==4.44.1
 huggingface_hub<1.0.0
+bitsandbytes
+accelerate
