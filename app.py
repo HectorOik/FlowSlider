@@ -56,53 +56,60 @@ def _load_pipe(model_name: str):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if model_name == "FLUX.1-dev":
+        from diffusers import FluxPipeline
+        print("⚡ Loading Full Precision FLUX Pipeline (bfloat16)...")
+        pipe = FluxPipeline.from_pretrained(
+            cfg["model_id"],
+            torch_dtype=dtype
+        )
         model_id = cfg["model_id"]
 
-        # 1. 4-bit quantization config for the massive Flux Transformer (~12B params)
-        quant_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16
-        )
+        # # 1. 4-bit quantization config for the massive Flux Transformer (~12B params)
+        # quant_config = BitsAndBytesConfig(
+        #     load_in_4bit=True,
+        #     bnb_4bit_quant_type="nf4",
+        #     bnb_4bit_compute_dtype=torch.bfloat16
+        # )
 
-        print("⚡ Loading Quantized FLUX Transformer (4-bit NF4)...")
-        transformer = FluxTransformer2DModel.from_pretrained(
-            model_id,
-            subfolder="transformer",
-            quantization_config=quant_config,
-            torch_dtype=torch.bfloat16,
-            device_map={"": device}
-        )
+        # print("⚡ Loading Quantized FLUX Transformer (4-bit NF4)...")
+        # transformer = FluxTransformer2DModel.from_pretrained(
+        #     model_id,
+        #     subfolder="transformer",
+        #     quantization_config=quant_config,
+        #     torch_dtype=torch.bfloat16,
+        #     device_map={"": device}
+        # )
 
-        print("⚡ Loading Encoders and VAE in bfloat16...")
-        text_encoder = CLIPTextModel.from_pretrained(
-            model_id, subfolder="text_encoder", torch_dtype=torch.bfloat16
-        ).to(device)
+        # print("⚡ Loading Encoders and VAE in bfloat16...")
+        # text_encoder = CLIPTextModel.from_pretrained(
+        #     model_id, subfolder="text_encoder", torch_dtype=torch.bfloat16
+        # ).to(device)
 
-        text_encoder_2 = T5EncoderModel.from_pretrained(
-            model_id, subfolder="text_encoder_2", torch_dtype=torch.bfloat16
-        ).to(device)
+        # text_encoder_2 = T5EncoderModel.from_pretrained(
+        #     model_id, subfolder="text_encoder_2", torch_dtype=torch.bfloat16
+        # ).to(device)
 
-        vae = AutoencoderKL.from_pretrained(
-            model_id, subfolder="vae", torch_dtype=torch.bfloat16
-        ).to(device)
+        # vae = AutoencoderKL.from_pretrained(
+        #     model_id, subfolder="vae", torch_dtype=torch.bfloat16
+        # ).to(device)
 
-        print("🔌 Assembling Flux Pipeline...")
-        pipe = FluxPipeline.from_pretrained(
-            model_id,
-            transformer=transformer,
-            text_encoder=text_encoder,
-            text_encoder_2=text_encoder_2,
-            vae=vae,
-            torch_dtype=torch.bfloat16
-        )
+        # print("🔌 Assembling Flux Pipeline...")
+        # pipe = FluxPipeline.from_pretrained(
+        #     model_id,
+        #     transformer=transformer,
+        #     text_encoder=text_encoder,
+        #     text_encoder_2=text_encoder_2,
+        #     vae=vae,
+        #     torch_dtype=torch.bfloat16
+        # )
     else:
         from diffusers import StableDiffusion3Pipeline
         pipe = StableDiffusion3Pipeline.from_pretrained(
             cfg["model_id"], 
             torch_dtype=torch.bfloat16
-        ).to(device)
+        )
 
+    pipe = pipe.to(device)
     _loaded[model_name] = (pipe, pipe.scheduler)
     return pipe, pipe.scheduler
 
