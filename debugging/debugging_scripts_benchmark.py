@@ -5,7 +5,7 @@ import argparse
 
 def debug_dataset_loading(mapping_file, images_dir, start_idx, end_idx):
     print("=" * 60)
-    print("🔍 DEBUGGING: Dataset Mapping & Path Resolution")
+    print(" DEBUGGING: Dataset Mapping & Path Resolution")
     print("=" * 60)
 
     # 1. Check mapping file existence
@@ -29,14 +29,14 @@ def debug_dataset_loading(mapping_file, images_dir, start_idx, end_idx):
         print(f"❌ ERROR: Failed to parse JSON mapping file: {e}")
         return False
 
-    # Normalize structure if dictionary
+    # Normalize structure for PIE-Bench dictionary format (where keys are image filenames)
     if isinstance(dataset_records, dict):
         dataset_records = [{"id": k, **v} for k, v in dataset_records.items()]
 
     # Apply slicing
     actual_end_idx = end_idx if end_idx is not None else len(dataset_records)
     dataset_slice = dataset_records[start_idx:actual_end_idx]
-    print(f"🔍 Inspecting slice range: [{start_idx} : {actual_end_idx}] ({len(dataset_slice)} items)")
+    print(f" Inspecting slice range: [{start_idx} : {actual_end_idx}] ({len(dataset_slice)} items)")
 
     # 4. Iterate and validate sample paths & fields
     missing_images_count = 0
@@ -44,10 +44,14 @@ def debug_dataset_loading(mapping_file, images_dir, start_idx, end_idx):
 
     for idx, row in enumerate(dataset_slice):
         current_idx = start_idx + idx
-        sweep_id = str(row.get('id', current_idx))
-        base_prompt = row.get('base_prompt', row.get('source_prompt'))
-        subprompt1 = row.get('target_prompt', row.get('subprompt_1'))
-        img_filename = row.get('image', row.get('file_name', f"{sweep_id}.png"))
+        
+        # The 'id' field is the image filename (e.g., '000000000001.jpg')
+        sweep_id = str(row.get('id', ''))
+        img_filename = sweep_id if sweep_id else f"{current_idx:012d}.jpg"
+        
+        base_prompt = str(row.get('original_prompt', row.get('base_prompt', row.get('editing_instruction', ''))))
+        subprompt1 = str(row.get('editing_prompt', row.get('target_prompt', row.get('editing_instruction', ''))))
+        
         source_img_path = os.path.join(images_dir, img_filename)
 
         # Print first 3 records as a sanity check
@@ -66,7 +70,7 @@ def debug_dataset_loading(mapping_file, images_dir, start_idx, end_idx):
             valid_count += 1
 
     print("\n" + "=" * 60)
-    print(f"📊 DEBUG SUMMARY:")
+    print(f" DEBUG SUMMARY:")
     print(f"   - Valid images found: {valid_count}/{len(dataset_slice)}")
     print(f"   - Missing images: {missing_images_count}/{len(dataset_slice)}")
     print("=" * 60)
@@ -75,7 +79,7 @@ def debug_dataset_loading(mapping_file, images_dir, start_idx, end_idx):
 
 def debug_app_import():
     print("\n" + "=" * 60)
-    print("🔍 DEBUGGING: App Logic & Environment Imports")
+    print(" DEBUGGING: App Logic & Environment Imports")
     print("=" * 60)
 
     sys.path.append(os.path.abspath("."))
