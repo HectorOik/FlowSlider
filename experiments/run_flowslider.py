@@ -45,7 +45,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         print(f"❌ Failed to import run_edit from app.py: {e}")
         sys.exit(1)
 
-    steering_steps = [0.0, 0.5, 1.0, 2.0, 3.0, 4.0]
+    steering_steps = [0.0, 0.5, 1.0, 1.5, 2.0]
     os.makedirs(output_dir, exist_ok=True)
 
     print("==================================================")
@@ -57,7 +57,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
     print("==================================================")
 
     if lora_path:
-        print(f"🔧 LoRA path provided: {lora_path}")
+        print(f" LoRA path provided: {lora_path}")
 
     # ---------------------------------------------------------------------------
     # 4. Load Dataset Mapping File (JSON)
@@ -71,7 +71,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
 
     if isinstance(dataset_records, dict):
         dataset_records = [{"id": k, **v} for k, v in dataset_records.items()]
-
+    print("DEBUG FIRST ROW KEYS:", list(dataset_records[0].keys()) if isinstance(dataset_records, list) and len(dataset_records) > 0 else dataset_records)
     actual_end_idx = end_idx if end_idx is not None else len(dataset_records)
     dataset_slice = dataset_records[start_idx:actual_end_idx]
     print(f"Processing slice [{start_idx}:{actual_end_idx}] out of {len(dataset_records)} total items.")
@@ -81,15 +81,19 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
     # ---------------------------------------------------------------------------
     for idx, row in enumerate(dataset_slice):
         current_idx = start_idx + idx
-        sweep_id = str(row.get('id', current_idx))
-        base_prompt = str(row.get('base_prompt', row.get('source_prompt', '')))
-        subprompt1 = str(row.get('target_prompt', row.get('subprompt_1', '')))
+        sweep_id = str(row.get('id', f"{current_idx:012d}.jpg"))
+        img_filename = sweep_id if sweep_id else f"{current_idx:012d}.jpg"
+        
+        # Extract and sanitize prompts with fallback checks
+        #base_prompt = str(row.get('original_prompt', row.get('base_prompt', row.get('editing_instruction', '')))).strip()
+        #subprompt1 = str(row.get('editing_prompt', row.get('target_prompt', row.get('editing_instruction', '')))).strip()
+
+        base_prompt = str(row.get('source_prompt', row.get('base_prompt', row.get('input_prompt', row.get('original_prompt', row.get('caption', '')))))).strip()
+        subprompt1 = str(row.get('target_prompt', row.get('editing_prompt', row.get('output_prompt', row.get('subprompt_1', ''))))).strip()
         seed = int(row.get('seed', 42))
 
-        img_filename = row.get('image', row.get('file_name', f"{sweep_id}.png"))
         source_img_path = os.path.join(images_dir, img_filename)
-
-        exp_dir = os.path.join(output_dir, str(sweep_id))
+        exp_dir = os.path.join(output_dir, os.path.splitext(sweep_id)[0])
         os.makedirs(exp_dir, exist_ok=True)
 
         if not os.path.exists(source_img_path):
@@ -130,7 +134,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
             for i, out_img in enumerate(steered_images):
                 s_val = steering_steps[i] if i < len(steering_steps) else i
                 s_str = f"{s_val}".replace(".", "_")
-                save_path = os.path.join(exp_dir, f"{sweep_id}_s_{s_str}_{clean_prompt}.png")
+                save_path = os.path.join(exp_dir, f"{os.path.splitext(sweep_id)[0]}_s_{s_str}_{clean_prompt}.png")
                 
                 if out_img.mode != "RGB":
                     out_img = out_img.convert("RGB")
@@ -141,7 +145,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         except Exception as e:
             print(f"❌ Execution error for {sweep_id}: {e}")
 
-    print("\n🎉 FlowSlider Benchmark Complete!")
+    print("\n FlowSlider Benchmark Complete!")
 
 
 def main():
