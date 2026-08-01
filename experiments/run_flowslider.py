@@ -83,7 +83,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
             print(f"❌ Failed to import run_edit from app.py: {e}")
             sys.exit(1)
 
-    steering_steps = [0.0, 0.5, 1.0, 1.5, 2.0]
+    steering_steps = [1.0, 0.5, 0.0, -0.5, -1.0]
     os.makedirs(output_dir, exist_ok=True)
 
     print("==================================================")
@@ -91,9 +91,6 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
     print(" CUDA Available:", torch.cuda.is_available())
     print(f" Target Mapping Source: {mapping_file}")
     print("==================================================")
-
-    if lora_path:
-        print(f" LoRA path provided: {lora_path}")
 
     # ---------------------------------------------------------------------------
     # 4. Load Dataset (Parquet for PIE-bench or JSON for rs-objects)
@@ -153,9 +150,25 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         with open(mapping_file, 'r') as f:
             mapping_data = json.load(f)
 
-    if isinstance(dataset_records, dict):
-        dataset_records = [{"id": k, **v} for k, v in dataset_records.items()]
-    print("DEBUG FIRST ROW KEYS:", list(dataset_records[0].keys()) if isinstance(dataset_records, list) and len(dataset_records) > 0 else dataset_records)
+        if isinstance(mapping_data, dict):
+            mapping_data = [{"id": k, **v} for k, v in mapping_data.items()]
+
+        for item in mapping_data:
+            sweep_id = str(item.get('id', 'sample'))
+            base_prompt = str(item.get('base_prompt', item.get('source_prompt', '')))
+            subprompt1 = str(item.get('target_prompt', item.get('subprompt_1', '')))
+            seed = int(item.get('seed', 42))
+            img_filename = item.get('image', item.get('file_name', f"{sweep_id}.png"))
+            source_img_path = os.path.join(images_dir, img_filename)
+
+            dataset_records.append({
+                "id": sweep_id,
+                "source_prompt": base_prompt,
+                "target_prompt": subprompt1,
+                "image_path": source_img_path,
+                "seed": seed
+            })
+
     actual_end_idx = end_idx if end_idx is not None else len(dataset_records)
     dataset_slice = dataset_records[start_idx:actual_end_idx]
     print(f"Processing slice [{start_idx}:{actual_end_idx}] out of {len(dataset_records)} total items.")
@@ -165,19 +178,20 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
     # ---------------------------------------------------------------------------
     for idx, row in enumerate(dataset_slice):
         current_idx = start_idx + idx
-        sweep_id = str(row.get('id', f"{current_idx:012d}.jpg"))
-        img_filename = sweep_id if sweep_id else f"{current_idx:012d}.jpg"
-        
-        # Extract and sanitize prompts with fallback checks
-        #base_prompt = str(row.get('original_prompt', row.get('base_prompt', row.get('editing_instruction', '')))).strip()
-        #subprompt1 = str(row.get('editing_prompt', row.get('target_prompt', row.get('editing_instruction', '')))).strip()
+        sweep_id = row['id']
+        base_prompt = row['source_prompt']
+        subprompt1 = row['target_prompt']
+        source_img_path = row['image_path']
+        seed = row['seed']
 
-        base_prompt = str(row.get('source_prompt', row.get('base_prompt', row.get('input_prompt', row.get('original_prompt', row.get('caption', '')))))).strip()
-        subprompt1 = str(row.get('target_prompt', row.get('editing_prompt', row.get('output_prompt', row.get('subprompt_1', ''))))).strip()
-        seed = int(row.get('seed', 42))
+        # Debug prompt checks placed correctly after variables are initialized
+        print(f"\n--- DEBUG PROMPT CHECK ---")
+        print(f"Sample ID: {sweep_id}")
+        print(f"Source Prompt: {base_prompt}")
+        print(f"Target Prompt: {subprompt1}")
+        print(f"--------------------------")
 
-        source_img_path = os.path.join(images_dir, img_filename)
-        exp_dir = os.path.join(output_dir, os.path.splitext(sweep_id)[0])
+        exp_dir = os.path.join(output_dir, str(sweep_id))
         os.makedirs(exp_dir, exist_ok=True)
 
         if not os.path.exists(source_img_path):
@@ -219,9 +233,8 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                     steered_images.append(item)
 
             for i, out_img in enumerate(steered_images):
-                s_val = steering_steps[i] if i < len(steering_steps) else i
-                s_str = f"{s_val}".replace(".", "_")
-                save_path = os.path.join(exp_dir, f"{os.path.splitext(sweep_id)[0]}_s_{s_str}_{clean_prompt}.png")
+                step_idx_str = f"{i:02d}"
+                save_path = os.path.join(exp_dir, f"step_{step_idx_str}.png")
                 
                 if out_img.mode != "RGB":
                     out_img = out_img.convert("RGB")
@@ -232,7 +245,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         except Exception as e:
             print(f"❌ Execution error for {sweep_id}: {e}")
 
-    print("\n FlowSlider Benchmark Complete!")
+    print("\n🎉 FlowSlider Benchmark Execution Complete!")
 
 
 def main():
