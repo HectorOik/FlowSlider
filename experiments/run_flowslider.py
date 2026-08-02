@@ -83,7 +83,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
             print(f"❌ Failed to import run_edit from app.py: {e}")
             sys.exit(1)
 
-    steering_steps = [1.0, 0.5, 0.0, -0.5, -1.0]
+    steering_steps = [1.0, 2.0, 3.0, 4.0, 5.0]
     os.makedirs(output_dir, exist_ok=True)
 
     print("==================================================")
