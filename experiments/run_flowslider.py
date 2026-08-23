@@ -40,7 +40,7 @@ class MockAppEdit:
         print("✅ Success: All alpha steps produced uniquely modified outputs during this sweep!\n")
         return results
 
-def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode):
+def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
     # ---------------------------------------------------------------------------
@@ -83,7 +83,10 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
             print(f"❌ Failed to import run_edit from app.py: {e}")
             sys.exit(1)
 
-    steering_steps = [1.0, 2.0, 3.0, 4.0, 5.0]
+    # steering_steps = [1.0, 2.0, 3.0, 4.0, 5.0]
+    steering_steps = [float(s.strip()) for s in steering_steps_str.split(",")]
+    scales_str = ", ".join(map(str, steering_steps))
+    
     os.makedirs(output_dir, exist_ok=True)
 
     print("==================================================")
@@ -261,7 +264,7 @@ def main():
     parser.add_argument("--lora_path", type=str, default=None)
     parser.add_argument("--dry_run", action="store_true", help="Run with mock pipeline to debug script logic without VRAM/models")
     parser.add_argument("--curvature_mode", type=str, default="baseline", choices=["baseline", "brake_only", "brake_and_boost"])
-    
+    parser.add_argument("--steering_steps", type=str, default="1.0,2.0,3.0,4.0,5.0", help="Comma-separated list of steering step values")
     args = parser.parse_args()
 
     run(
@@ -274,7 +277,8 @@ def main():
         end_idx=args.end_idx,
         lora_path=args.lora_path,
         dry_run=args.dry_run,
-        curvature_mode=args.curvature_mode
+        curvature_mode=args.curvature_mode,
+        steering_steps_str=args.steering_steps
     )
 
 
