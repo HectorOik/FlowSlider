@@ -640,11 +640,11 @@ def FlowEditFLUX_Slider(
 
                     import math
 
-                    if curvature_mode == "break_only":
+                    if curvature_mode == "brake_only":
                         curvature_penalty = math.exp(-(1.0 - cos_sim) * curvature_lambda)
                         effective_strength = strength * curvature_penalty
 
-                    if curvature_mode == "break_and_boost":
+                    if curvature_mode == "brake_and_boost":
                         damping = math.exp(-(1.0 - cos_sim) * curvature_lambda)
                         safe_cos = max(0.0, cos_sim)
                         effective_strength = strength * (2.0 * safe_cos) * damping

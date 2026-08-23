@@ -40,7 +40,7 @@ class MockAppEdit:
         print("✅ Success: All alpha steps produced uniquely modified outputs during this sweep!\n")
         return results
 
-def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run):
+def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
     # ---------------------------------------------------------------------------
@@ -220,7 +220,8 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                 n_max=20,
                 src_cfg=3.5,
                 tar_cfg=3.5,
-                seed=float(seed)
+                seed=float(seed),
+                curvature_mode=curvature_mode
             )
 
             steered_images = []
@@ -259,6 +260,7 @@ def main():
     parser.add_argument("--end_idx", type=int, default=None)
     parser.add_argument("--lora_path", type=str, default=None)
     parser.add_argument("--dry_run", action="store_true", help="Run with mock pipeline to debug script logic without VRAM/models")
+    parser.add_argument("--curvature_mode", type=str, default="baseline", choices=["baseline", "brake_only", "brake_and_boost"])
     
     args = parser.parse_args()
 
@@ -271,7 +273,8 @@ def main():
         start_idx=args.start_idx,
         end_idx=args.end_idx,
         lora_path=args.lora_path,
-        dry_run=args.dry_run
+        dry_run=args.dry_run,
+        curvature_mode=args.curvature_mode
     )
 
 
