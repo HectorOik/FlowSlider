@@ -385,6 +385,8 @@ def FlowEditFLUX_Slider(
     scale_mode: str = "slider",
     normalize_v_dir: bool = False,
     v_dir_target_norm: float = 1.0,
+    curvature_mode: str = "baseline", # Options: "baseline", "brake_only", "brake_and_boost"
+    curvature_lambda: float = 2.0,
     log_vectors: bool = False,
     log_output_dir: Optional[str] = None,
 ):
@@ -624,6 +626,32 @@ def FlowEditFLUX_Slider(
                 # V_fid: Base change from source to negative target
                 V_fid = Vt_neg - Vt_src
 
+                # ============================================
+                # curvature scaling (Hector)
+                # ============================================
+                # 
+                effective_strength = strength
+
+                if prev_V_steer is not None and curvature_mode != "baseline":
+                    cos_sim = F.cosine_similarity(
+                        V_steer.view(-1).unsqueeze(0),
+                        prev_V_steer.view(-1).unsqueeze(0)
+                    ).item()
+
+                    import math
+
+                    if curvature_mode == "break_only":
+                        curvature_penalty = math.exp(-(1.0 - cos_sim) * curvature_lambda)
+                        effective_strength = strength * curvature_penalty
+
+                    if curvature_mode == "break_and_boost":
+                        damping = math.exp(-(1.0 - cos_sim) * curvature_lambda)
+                        safe_cos = max(0.0, cos_sim)
+                        effective_strength = strength * (2.0 * safe_cos) * damping
+                    else:
+                        raise ValueError(f"Unknown curvature_mode: {curvature_mode}")
+
+
                 # V_delta_s computation depends on scale_mode
                 if scale_mode == "slider":
                     # Slider mode: strength the direction vector (FreeSlider-like)
@@ -639,7 +667,10 @@ def FlowEditFLUX_Slider(
                     else:
                         V_steer_scaled = V_steer
 
-                    V_delta_s = V_fid + strength * V_steer_scaled
+                    # V_delta_s = V_fid + strength * V_steer_scaled (Hector)
+                    V_delta_s = V_fid + effective_strength * V_steer_scaled
+
+
                 elif scale_mode == "direct":
                     # Direct mode: strength the full velocity difference without decomposition
                     # V_delta_s = strength * (V_pos - V_src)
@@ -693,8 +724,12 @@ def FlowEditFLUX_Slider(
                 stats_list.append(step_stats)
 
                 # Store current values for next iteration comparison
-                prev_V_steer = V_steer.clone()
-                prev_zt_edit = zt_edit.clone()
+                # prev_V_steer = V_steer.clone()
+                # prev_zt_edit = zt_edit.clone()
+            
+            # Store current values for next iteration comparison (Hector - moved cache outside if block to program always has access to it)
+            prev_V_steer = V_steer.clone()
+            prev_zt_edit = zt_edit.clone()
 
             # Propagate ODE
             zt_edit = zt_edit.to(torch.float32)
@@ -798,6 +833,7 @@ def FlowEditFLUX_Slider_batch(
             tar_guidance_scale=tar_guidance_scale,
             n_min=n_min,
             n_max=n_max,
+            curvature_mode="baseline"
         )
         results[strength] = result
 
