@@ -40,7 +40,7 @@ class MockAppEdit:
         print("✅ Success: All alpha steps produced uniquely modified outputs during this sweep!\n")
         return results
 
-def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability):
+def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability, stratified, samples_per_category):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
     # ---------------------------------------------------------------------------
@@ -172,6 +172,27 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                 "seed": seed
             })
 
+    if stratified:
+        from collections import defaultdict
+        category_buckets = defaultdict(list)
+        for record in dataset_records:
+            cat = record.get("category", "default")
+            category_buckets[cat].append(record)
+
+        stratified_records = []
+        samples_per_cat = samples_per_category
+
+        print("\n----- Stratified Sampling Breadown -----")
+        for cat, records in category_buckets.items():
+            take_count = min(len(records), samples_per_cat)
+            stratified_records.extend(records[:take_count])
+            print(f"Category '{cat}': grabbed {take_count}/{len(records)} samples")
+        print("----------------------------------------")
+
+        dataset_records = stratified_records
+    else:
+        print("\n--- Stratified Sampling Disabled. Using full dataset pool. ---")
+
     actual_end_idx = end_idx if end_idx is not None else len(dataset_records)
     dataset_slice = dataset_records[start_idx:actual_end_idx]
     print(f"Processing slice [{start_idx}:{actual_end_idx}] out of {len(dataset_records)} total items.")
@@ -269,6 +290,8 @@ def main():
     parser.add_argument("--curvature_mode", type=str, default="baseline", choices=["baseline", "brake_only", "brake_and_boost"])
     parser.add_argument("--steering_steps", type=str, default="1.0,2.0,3.0,4.0,5.0", help="Comma-separated list of steering step values")
     parser.add_argument("--interpretability", action="store_true", help="Log internal ODE vectors, cosine similarities, and latents for diagnostic plotting")
+    parser.add_argument("--stratified", action="store_true", help="Enable balanced stratified sampling across categories")
+    parser.add_argument("--samples_per_category", type=int, default=20, help="Number of samples to pick per category if stratified is enabled")
     
     args = parser.parse_args()
 
@@ -284,7 +307,9 @@ def main():
         dry_run=args.dry_run,
         curvature_mode=args.curvature_mode,
         steering_steps_str=args.steering_steps,
-        interpretability=args.interpretability
+        interpretability=args.interpretability,
+        stratified=args.stratified,
+        samples_per_category=args.samples_per_category
     )
 
 
