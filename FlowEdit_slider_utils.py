@@ -432,6 +432,7 @@ def FlowEditFLUX_Slider(
 
     # Initialize logging variables
     stats_list = [] if log_vectors else None
+    raw_tensor_sequence = [] if log_vectors else None # ----- Hector ---------
     prev_V_steer = None
     prev_zt_edit = None
 
@@ -723,6 +724,14 @@ def FlowEditFLUX_Slider(
                     step_stats["v_dir_original_norm"] = V_steer.norm(dim=-1).mean().item()
                 stats_list.append(step_stats)
 
+                # ----------- (Hector) --------------
+                raw_tensor_sequence.append({
+                    "timestep": step_stats["timestep"],
+                    "zt_edit": zt_edit.detach().cpu(),
+                    "v_steer": V_steer.detach().cpu(),
+                    "v_fid": V_fid.detach().cpu()
+                })
+
                 # Store current values for next iteration comparison
                 # prev_V_steer = V_steer.clone()
                 # prev_zt_edit = zt_edit.clone()
@@ -781,6 +790,12 @@ def FlowEditFLUX_Slider(
     if log_vectors and stats_list:
         stats_path = save_vector_stats(stats_list, log_output_dir, strength)
         plot_vector_stats(stats_path, log_output_dir)
+
+        if raw_tensor_sequence:
+            tensor_save_path = os.path.join(log_output_dir, f"raw_interpretability_tensors_strength_{strength:.2f}.pt")
+            torch.save(raw_tensor_sequence, tensor_save_path)
+            print(f"Raw interpretability tensors saved to {tensor_save_path}")
+
         print(f"Vector statistics saved to {log_output_dir}")
 
     return unpacked_out

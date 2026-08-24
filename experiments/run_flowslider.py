@@ -12,7 +12,7 @@ import numpy as np
 # Mock Application with Unique Alpha Step Simulation & Validation
 # ---------------------------------------------------------------------------
 class MockAppEdit:
-    def __call__(self, model_name, image, src_prompt, tar_prompt, tar_prompt_neg, strengths_str, T_steps, n_max, src_cfg, tar_cfg, seed):
+    def __call__(self, model_name, image, src_prompt, tar_prompt, tar_prompt_neg, strengths_str, T_steps, n_max, src_cfg, tar_cfg, seed, curvature_mode, interpretability, exp_dir):
         from PIL import ImageEnhance
         
         strengths = [float(s.strip()) for s in strengths_str.split(",")]
@@ -40,7 +40,7 @@ class MockAppEdit:
         print("✅ Success: All alpha steps produced uniquely modified outputs during this sweep!\n")
         return results
 
-def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str):
+def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
     # ---------------------------------------------------------------------------
@@ -224,7 +224,9 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                 src_cfg=3.5,
                 tar_cfg=3.5,
                 seed=float(seed),
-                curvature_mode=curvature_mode
+                curvature_mode=curvature_mode,
+                interpretability=interpretability,
+                exp_dir=exp_dir
             )
 
             steered_images = []
@@ -258,6 +260,7 @@ def main():
     parser.add_argument("--mapping_file", type=str, required=True)
     parser.add_argument("--images_dir", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument("--exp_dir", type=str, default=None, help="Optional specific experiment subdirectory path")
     parser.add_argument("--hf_token_path", type=str, default="~/.hf_token")
     parser.add_argument("--start_idx", type=int, default=0)
     parser.add_argument("--end_idx", type=int, default=None)
@@ -265,6 +268,8 @@ def main():
     parser.add_argument("--dry_run", action="store_true", help="Run with mock pipeline to debug script logic without VRAM/models")
     parser.add_argument("--curvature_mode", type=str, default="baseline", choices=["baseline", "brake_only", "brake_and_boost"])
     parser.add_argument("--steering_steps", type=str, default="1.0,2.0,3.0,4.0,5.0", help="Comma-separated list of steering step values")
+    parser.add_argument("--interpretability", action="store_true", help="Log internal ODE vectors, cosine similarities, and latents for diagnostic plotting")
+    
     args = parser.parse_args()
 
     run(
@@ -278,7 +283,8 @@ def main():
         lora_path=args.lora_path,
         dry_run=args.dry_run,
         curvature_mode=args.curvature_mode,
-        steering_steps_str=args.steering_steps
+        steering_steps_str=args.steering_steps,
+        interpretability=args.interpretability
     )
 
 

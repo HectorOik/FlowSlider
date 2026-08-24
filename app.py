@@ -153,6 +153,8 @@ def run_edit(
     tar_cfg: float,
     seed: int,
     curvature_mode: str,
+    interpretability: bool,
+    exp_dir: str,
     progress=gr.Progress(track_tqdm=True),
 ):
     if image is None:
@@ -218,6 +220,8 @@ def run_edit(
             n_max=int(n_max),
             normalize_v_dir=False,
             curvature_mode=curvature_mode,
+            log_vectors=interpretability,
+            log_output_dir=exp_dir
         )
 
         edited = _decode_latent(pipe, x0_tar, device)
