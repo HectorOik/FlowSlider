@@ -40,6 +40,71 @@ class MockAppEdit:
         print("✅ Success: All alpha steps produced uniquely modified outputs during this sweep!\n")
         return results
 
+
+def load_dataset_stratified_pie_bench(mapping_file_path_or_dir, images_dir, samples_per_category=20):
+    """
+    Loads PIE-bench from parquet files with embedded image bytes and ensures a strict stratified split.
+    """
+    import pandas as pd
+    valid_dataset = []
+    
+    if os.path.isdir(mapping_file_path_or_dir):
+        category_dirs = sorted([os.path.join(mapping_file_path_or_dir, d) for d in os.listdir(mapping_file_path_or_dir) if os.path.isdir(os.path.join(mapping_file_path_or_dir, d))])
+        
+        for cat_dir in category_dirs:
+            cat_name = os.path.basename(cat_dir)
+            if cat_name.startswith('.'):
+                continue
+                
+            parquet_files = glob.glob(os.path.join(cat_dir, "*.parquet"))
+            
+            cat_samples_collected = 0
+            for p_file in sorted(parquet_files):
+                df = pd.read_parquet(p_file)
+                for idx, row in df.iterrows():
+                    if cat_samples_collected >= samples_per_category:
+                        break
+                        
+                    sample_id = str(row.get("id", f"sample_{idx}"))
+                    target_prompt = str(row.get("target_prompt", ""))
+                    source_prompt = str(row.get("source_prompt", ""))
+                    
+                    # Extract embedded image bytes from the parquet row
+                    img_obj = row.get("image", None)
+                    img_path = None
+                    
+                    temp_img_dir = os.path.join(images_dir, "_extracted_cache", cat_name)
+                    os.makedirs(temp_img_dir, exist_ok=True)
+                    img_path = os.path.join(temp_img_dir, f"{sample_id}.jpg")
+                    
+                    if not os.path.exists(img_path):
+                        if isinstance(img_obj, dict) and "bytes" in img_obj:
+                            img_bytes = img_obj["bytes"]
+                        elif isinstance(img_obj, bytes):
+                            img_bytes = img_obj
+                        else:
+                            img_bytes = None
+                            
+                        if img_bytes is not None:
+                            with open(img_path, "wb") as f_img:
+                                f_img.write(img_bytes)
+                    
+                    if os.path.exists(img_path):
+                        valid_dataset.append({
+                            "id": sample_id,
+                            "image_path": img_path,
+                            "prompt": target_prompt,
+                            "source_prompt": source_prompt,
+                            "category": cat_name
+                        })
+                        cat_samples_collected += 1
+                        
+                if cat_samples_collected >= samples_per_category:
+                    break
+            print(f"Category [{cat_name}]: Loaded {cat_samples_collected} samples.")
+            
+    return valid_dataset
+
 def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability, stratified, samples_per_category):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
@@ -101,50 +166,13 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
     dataset_records = []
 
     if dataset_type == "pie-bench":
-        print(f"Loading PIE-bench parquet files from {mapping_file}...")
-        if os.path.isdir(mapping_file):
-            parquet_files = sorted(glob.glob(os.path.join(mapping_file, "**/*.parquet"), recursive=True))
-        else:
-            parquet_files = [mapping_file]
-            
-        if not parquet_files:
-            raise FileNotFoundError(f"No parquet files found for PIE-bench at {mapping_file}")
-            
-        for p_file in parquet_files:
-            df = pd.read_parquet(p_file)
-            for idx, row in df.iterrows():
-                sample_id = str(row.get("id", f"sample_{idx}"))
-                target_prompt = str(row.get("target_prompt", ""))
-                source_prompt = str(row.get("source_prompt", ""))
-                
-                img_obj = row.get("image", None)
-                img_path = None
-                
-                if isinstance(img_obj, dict) and "bytes" in img_obj:
-                    temp_img_dir = os.path.join(images_dir, "_extracted_cache")
-                    os.makedirs(temp_img_dir, exist_ok=True)
-                    img_path = os.path.join(temp_img_dir, f"{sample_id}.jpg")
-                    if not os.path.exists(img_path):
-                        with open(img_path, "wb") as f_img:
-                            f_img.write(img_obj["bytes"])
-                elif isinstance(img_obj, bytes):
-                    temp_img_dir = os.path.join(images_dir, "_extracted_cache")
-                    os.makedirs(temp_img_dir, exist_ok=True)
-                    img_path = os.path.join(temp_img_dir, f"{sample_id}.jpg")
-                    if not os.path.exists(img_path):
-                        with open(img_path, "wb") as f_img:
-                            f_img.write(img_obj)
-                else:
-                    img_filename = str(row.get("path", f"{sample_id}.jpg"))
-                    img_path = os.path.join(images_dir, img_filename)
-
-                dataset_records.append({
-                    "id": sample_id,
-                    "source_prompt": source_prompt,
-                    "target_prompt": target_prompt,
-                    "image_path": img_path,
-                    "seed": 42
-                })
+        print(f"Loading stratified PIE-bench from category subfolders at {mapping_file}...")
+        dataset_records = load_dataset_stratified_pie_bench(
+            mapping_file_path_or_dir=mapping_file, 
+            images_dir=images_dir, 
+            samples_per_category=samples_per_category
+        )
+        stratified = False  # Already fully stratified by the loader function
     else:
         if not os.path.exists(mapping_file):
             raise FileNotFoundError(f"Cannot find mapping file at '{mapping_file}'")
@@ -169,11 +197,11 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                 "source_prompt": base_prompt,
                 "target_prompt": subprompt1,
                 "image_path": source_img_path,
-                "category": str(row.get("category", "default")),
+                "category": str(item.get("category", "default")),
                 "seed": seed
             })
 
-    if stratified:
+    if stratified and dataset_type != "pie-bench":
         from collections import defaultdict
         category_buckets = defaultdict(list)
         for record in dataset_records:
@@ -183,7 +211,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         stratified_records = []
         samples_per_cat = samples_per_category
 
-        print("\n----- Stratified Sampling Breadown -----")
+        print("\n----- Stratified Sampling Breakdown -----")
         for cat, records in category_buckets.items():
             take_count = min(len(records), samples_per_cat)
             stratified_records.extend(records[:take_count])
@@ -191,7 +219,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         print("----------------------------------------")
 
         dataset_records = stratified_records
-    else:
+    elif dataset_type != "pie-bench":
         print("\n--- Stratified Sampling Disabled. Using full dataset pool. ---")
 
     actual_end_idx = end_idx if end_idx is not None else len(dataset_records)
