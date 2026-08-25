@@ -233,9 +233,9 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
         current_idx = start_idx + idx
         sweep_id = row['id']
         base_prompt = row['source_prompt']
-        subprompt1 = row['target_prompt']
+        subprompt1 = row['prompt']
         source_img_path = row['image_path']
-        seed = row['seed']
+        seed = row.get('seed', 42)
 
         # Debug prompt checks placed correctly after variables are initialized
         print(f"\n--- DEBUG PROMPT CHECK ---")
