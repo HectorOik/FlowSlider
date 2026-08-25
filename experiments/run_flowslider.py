@@ -169,6 +169,7 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                 "source_prompt": base_prompt,
                 "target_prompt": subprompt1,
                 "image_path": source_img_path,
+                "category": str(row.get("category", "default")),
                 "seed": seed
             })
 
