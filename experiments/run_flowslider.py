@@ -105,7 +105,7 @@ def load_dataset_stratified_pie_bench(mapping_file_path_or_dir, images_dir, samp
             
     return valid_dataset
 
-def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability, stratified, samples_per_category):
+def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start_idx, end_idx, lora_path, dry_run, curvature_mode, steering_steps_str, interpretability, stratified, samples_per_category, start_step_idx=0):
     # ---------------------------------------------------------------------------
     # 1. Dynamic Path Resolution & Cache Routing
     # ---------------------------------------------------------------------------
@@ -289,7 +289,8 @@ def run(dataset_type, mapping_file, images_dir, output_dir, hf_token_path, start
                     steered_images.append(item)
 
             for i, out_img in enumerate(steered_images):
-                step_idx_str = f"{i:02d}"
+                step_idx = start_step_idx + i
+                step_idx_str = f"{step_idx:02d}"
                 save_path = os.path.join(exp_dir, f"step_{step_idx_str}.png")
                 
                 if out_img.mode != "RGB":
@@ -318,6 +319,7 @@ def main():
     parser.add_argument("--dry_run", action="store_true", help="Run with mock pipeline to debug script logic without VRAM/models")
     parser.add_argument("--curvature_mode", type=str, default="baseline", choices=["baseline", "brake_only", "brake_and_boost"])
     parser.add_argument("--steering_steps", type=str, default="1.0,2.0,3.0,4.0,5.0", help="Comma-separated list of steering step values")
+    parser.add_argument("--start_step_idx", type=int, default=0, help="Starting step index for saved file names (e.g. 5 to save step_05, step_06, ...)")
     parser.add_argument("--interpretability", action="store_true", help="Log internal ODE vectors, cosine similarities, and latents for diagnostic plotting")
     parser.add_argument("--stratified", action="store_true", help="Enable balanced stratified sampling across categories")
     parser.add_argument("--samples_per_category", type=int, default=20, help="Number of samples to pick per category if stratified is enabled")
@@ -338,7 +340,8 @@ def main():
         steering_steps_str=args.steering_steps,
         interpretability=args.interpretability,
         stratified=args.stratified,
-        samples_per_category=args.samples_per_category
+        samples_per_category=args.samples_per_category,
+        start_step_idx=args.start_step_idx
     )
 
 
