@@ -10,6 +10,22 @@ pinned: false
 license: mit
 ---
 
+# FlowSlider – Continuous Image Editing via Flow Matching (Thesis Benchmark Fork)
+
+> [!NOTE]  
+> **Thesis Fork Overview & Custom Edits**  
+> This repository is a fork of **FlowSlider** (extending FlowEdit) configured for continuous image editing evaluation and benchmark analysis.  
+>   
+> **Key Modifications Added in This Fork:**  
+> - **Extended 3-Prompt Directional Decomposition ([`FlowEdit_slider_utils.py`](FlowEdit_slider_utils.py), [`FlowEdit_utils.py`](FlowEdit_utils.py))**: Implemented flow velocity vector decomposition with scaling knobs for fine-grained continuous control.  
+> - **Benchmark & Experiment Suite ([`experiments/`](experiments/), [`debugging/`](debugging/))**: Custom evaluation scripts (`run_flowslider.py`) for sweeping scale intervals across benchmark datasets.  
+> - **Steering Variations**: Implemented evaluation support for Brake-only vs Boost steering mechanisms.  
+> - **Integration with Thesis Benchmark**: Export metrics compatible with the master thesis evaluation suite.  
+>   
+> 🔗 **Master Thesis Repository**: For cross-paradigm comparisons, statistical analysis scripts, and paper table generation, visit the master repository: [**HectorOik/Thesis**](https://github.com/HectorOik/Thesis).
+
+---
+
 # FlowSlider – Continuous Image Editing via Flow Matching
 
 **FlowSlider** extends [FlowEdit](https://huggingface.co/papers/2412.08629) with a
